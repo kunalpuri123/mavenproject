@@ -1,61 +1,43 @@
 pipeline {
     agent any
-
     tools {
         maven 'sonarmaven'
     }
-
     environment {
+        
         SONAR_TOKEN = credentials('sonar-token')
-        SONAR_SCANNER_PATH = '/opt/homebrew/bin/sonar-scanner' // Update this if the path is different
     }
-
     stages {
-
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                echo 'Checking out code...'
                 checkout scm
             }
         }
-
-        stage('Build & Package') {
+        stage('Build and Test') {
             steps {
-                echo 'Building and packaging the application...'
-                sh 'mvn clean package'
+                sh 'mvn clean verify'
             }
         }
-
-        stage('Test') {
-            steps {
-                echo 'Running tests and collecting code coverage...'
-                sh 'mvn test jacoco:report'
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
-                echo 'Starting SonarQube analysis...'
-                sh '''
-                sonar-scanner -Dsonar.projectKey=mavenproject \
-                  -Dsonar.sources=. \
-                  -Dsonar.java.binaries=target/classes \
-                  -Dsonar.jacoco.reportPaths=target/site/jacoco/jacoco.xml \
-                  -Dsonar.host.url=http://localhost:9000 \
-                  -Dsonar.login=$SONAR_TOKEN
-                '''
+                withSonarQubeEnv('sonarqube') {
+                    sh """
+                       mvn clean verify sonar:sonar \
+                        -Dsonar.projectKey=mavenproject \
+                       
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.login=$SONAR_TOKEN
+                    """
+                }
             }
         }
-
     }
-
     post {
         success {
-            echo 'Pipeline completed successfully!'
-            archiveArtifacts artifacts: 'target/site/jacoco/*', allowEmptyArchive: true
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed. Please check the logs for errors.'
+            echo 'Pipeline failed.'
         }
     }
 }
