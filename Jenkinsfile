@@ -23,7 +23,7 @@ pipeline {
                 withSonarQubeEnv('sonarqube') {
                     sh """
                        mvn clean verify sonar:sonar \
-                        -Dsonar.projectKey=mavenproject \
+                        -Dsonar.projectKey=MavenTask \
                        
                         -Dsonar.host.url=http://localhost:9000 \
                         -Dsonar.login=$SONAR_TOKEN
