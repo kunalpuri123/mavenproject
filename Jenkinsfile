@@ -7,8 +7,8 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
-        SONAR_SCANNER_PATH = '/opt/homebrew/bin/sonar-scanner'
-        
+        SONAR_SCANNER_PATH = '/opt/homebrew/bin/sonar-scanner' // Update this if the path is different
+    }
 
     stages {
 
